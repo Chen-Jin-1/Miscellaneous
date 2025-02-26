@@ -1,7 +1,3 @@
-:: 脱控 1.0
-:: 制作 Chen-Jin
-:: 已在临川一中高新校区初中部电脑室测试成功
-
 cd /d "C:\Program Files (x86)\"
 taskkill /f /im MMClient.exe
 taskkill /f /im CDMPCom.exe
@@ -15,3 +11,7 @@ rd /s /q LBD5800MT
 rd /s /q LBDCMD_Tools
 rd /s /q LgSoftWAN
 pause
+
+:: 脱控 1.0
+:: 制作 Chen-Jin
+:: 已在临川一中高新校区初中部电脑室测试成功
