@@ -1,3 +1,4 @@
+@echo off
 cd /d "C:\Program Files (x86)\"
 taskkill /f /im MMClient.exe
 taskkill /f /im CDMPCom.exe
