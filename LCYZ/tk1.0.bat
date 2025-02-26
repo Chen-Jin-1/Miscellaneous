@@ -14,6 +14,6 @@ rd /s /q LBDCMD_Tools
 rd /s /q LgSoftWAN
 pause
 
-:: 脱控 1.0
-:: 制作 Chen-Jin
-:: 已在临川一中高新校区初中部电脑室测试成功
+:: �ѿ� 1.0
+:: ���� Chen-Jin
+:: �����ٴ�һ�и���У�����в������Ҳ��Գɹ�
