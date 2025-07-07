@@ -5,7 +5,6 @@ class no20 {
     return {
       id: extensionId,
       name: '事件',
-      color1: Scratch.Colors.enents.primary,
       blocks: [
         {
           opcode: 'zyno20',
