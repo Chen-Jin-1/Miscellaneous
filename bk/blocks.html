@@ -1,17 +1,23 @@
 <script>
-    setInterval(() => {
+    onmousemove = () => setInterval(() => {
         const x = document.createElement("div");
         var n = 0;
         x.style.position = "fixed";
-        x.style.top = `${Math.random() * innerHeight}px`;
-        x.style.left = `${Math.random() * innerWidth}px`;
-        x.style.height = `${Math.random() * innerHeight}px`;
-        x.style.width = `${Math.random() * innerWidth}px`;
-        x.style.backgroundColor = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
         x.style.backdropFilter = "invert(1)";
         x.style.opacity = "0.5";
         x.style.transition = "0.5s all";
-        setInterval(() => x.style.transform = `rotate(${n += Math.random() * 1000 - 500}deg)`, 300);
+        x.style.height = '50px';
+        x.style.width = '50px';
+        x.style.borderRadius = "50%";
+        function f() {
+            x.style.top = `${Math.random() * innerHeight}px`;
+            x.style.left = `${Math.random() * innerWidth}px`;
+            x.style.backgroundColor = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`;
+        }
+        addEventListener("mousemove", f);
+        f();
+        setInterval(() => x.style.transform = `rotate(${n += Math.random() * 100 - 50}deg)`, Math.random() * 1000);
         document.body.appendChild(x);
     }, 1);
+    onmousemove();
 </script>
