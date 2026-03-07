@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monaco HTML 实时预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+        }
+
+        /* 左侧编辑器区 */
+        .editor-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #333;
+        }
+
+        .toolbar {
+            padding: 10px 16px;
+            background: #2d2d2d;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #3d3d3d;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-title {
+            font-weight: 500;
+            color: #ddd;
+        }
+
+        .preview-btn {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            letter-spacing: 0.3px;
+        }
+
+        .preview-btn:hover {
+            background: #005f9e;
+        }
+
+        .shortcut-hint {
+            font-size: 12px;
+            color: #aaa;
+            margin-left: auto;
+        }
+
+        #editor-container {
+            flex: 1;
+            width: 100%;
+            min-height: 0;  /* flex 子项必需 */
+        }
+
+        /* 右侧预览区 */
+        .preview-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+        }
+
+        .preview-header {
+            padding: 10px 16px;
+            background: #e8e8e8;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .preview-header span {
+            background: #007acc;
+            color: white;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-left: 16px;
+        }
+
+        #preview-frame {
+            width: 100%;
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        /* 加载状态 (编辑器未就绪时显示) */
+        .loading-placeholder {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e1e1e;
+            color: #aaa;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧：编辑器 + 工具栏 -->
+        <div class="editor-section">
+            <div class="toolbar">
+                <span class="toolbar-title">📝 HTML 编辑器</span>
+                <button class="preview-btn" id="preview-button">▶ 预览 (Ctrl+Enter)</button>
+                <span class="shortcut-hint">在右侧查看渲染效果</span>
+            </div>
+            <div id="editor-container">
+                <div class="loading-placeholder" id="editor-loading">加载 Monaco 编辑器...</div>
+            </div>
+        </div>
+
+        <!-- 右侧：预览区域 -->
+        <div class="preview-section">
+            <div class="preview-header">
+                ⚡ 实时预览
+                <span>iframe</span>
+            </div>
+            <iframe id="preview-frame" title="HTML 预览" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // ---- 1. 加载 Monaco Editor (动态加载, 返回 Promise) ----
+        function loadMonaco() {
+            if (window.monaco) {
+                return Promise.resolve(window.monaco);
+            }
+            if (window._monacoLoadingPromise) {
+                return window._monacoLoadingPromise;
+            }
+
+            window._monacoLoadingPromise = new Promise((resolve, reject) => {
+                // 配置 require 路径
+                window.require = window.require || {};
+                window.require.paths = window.require.paths || {};
+                window.require.paths['vs'] = 'https://g.alicdn.com/code/lib/monaco-editor/0.52.0/min/vs';
+
+                // 可选：中文界面
+                window.require['vs/nls'] = {
+                    availableLanguages: { '*': 'zh-cn' }
+                };
+
+                const loader = document.createElement('script');
+                loader.src = 'https://g.alicdn.com/code/lib/monaco-editor/0.52.0/min/vs/loader.min.js';
+                loader.onload = () => {
+                    require(['vs/editor/editor.main'], () => {
+                        console.log('✅ Monaco 加载完成');
+                        resolve(window.monaco);
+                    }, (err) => {
+                        console.error('Monaco 主模块加载失败', err);
+                        reject(err);
+                    });
+                };
+                loader.onerror = (err) => {
+                    console.error('loader.js 加载失败', err);
+                    reject(err);
+                };
+                document.head.appendChild(loader);
+            });
+            return window._monacoLoadingPromise;
+        }
+
+        // ---- 2. 主要逻辑 ----
+        (async function main() {
+            const editorContainer = document.getElementById('editor-container');
+            const loadingEl = document.getElementById('editor-loading');
+            const previewBtn = document.getElementById('preview-button');
+            const previewFrame = document.getElementById('preview-frame');
+
+            // 初始示例 HTML (包含一些基础样式和脚本)
+            const defaultHtml = `<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的页面</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #007acc;
+            border-bottom: 3px solid #007acc;
+            display: inline-block;
+            padding-bottom: 0.3rem;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: transform 0.1s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            background: #005f9e;
+        }
+        footer {
+            margin-top: 2rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎉 Monaco + 预览</h1>
+        <p>这是一个使用 Monaco 编辑 HTML 并实时预览的示例。</p>
+        <p><strong>试试修改左侧代码，然后点击预览按钮！</strong></p>
+        <button onclick="document.querySelector('h1').style.color = 'hotpink'">点击变色</button>
+        <footer>编辑愉快 ✨</footer>
+    </div>
+
+    <script>
+        console.log('预览脚本已运行，当前时间: ' + new Date().toLocaleString());
+        // 这里可以放任意 JS
+    <\/script>
+</body>
+</html>`;
+
+            try {
+                // 加载 Monaco
+                const monaco = await loadMonaco();
+                
+                // 移除 loading 文字
+                if (loadingEl) loadingEl.remove();
+
+                // 创建编辑器 (直接使用 editorContainer)
+                const editor = monaco.editor.create(editorContainer, {
+                    value: defaultHtml,
+                    language: 'html',
+                    theme: 'vs-dark',
+                    automaticLayout: true,
+                    fontSize: 14,
+                    wordWrap: 'on',
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    lineNumbers: 'on',
+                    formatOnPaste: true,
+                    formatOnType: true,
+                    suggest: { snippetsPreventQuickSuggestions: false }
+                });
+
+                // 暴露给全局，方便调试
+                window.editor = editor;
+
+                // 预览函数：将编辑器内容写入 iframe
+                function updatePreview() {
+                    const htmlContent = editor.getValue();
+                    // 写入 iframe (使用 srcdoc 避免额外网络请求，支持完整 HTML 文档)
+                    previewFrame.srcdoc = htmlContent;
+                    console.log('预览已更新', new Date().toLocaleTimeString());
+                }
+
+                // 绑定预览按钮
+                previewBtn.addEventListener('click', updatePreview);
+
+                // 绑定快捷键 Ctrl+Enter (或 Cmd+Enter)
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, updatePreview);
+
+                // 可选：编辑器内容变化后自动防抖预览 (为了性能，可开启注释)
+                // let timer;
+                // editor.onDidChangeModelContent(() => {
+                //     clearTimeout(timer);
+                //     timer = setTimeout(updatePreview, 800);
+                // });
+
+                // 初始预览 (立刻显示默认内容)
+                setTimeout(() => {
+                    updatePreview();
+                }, 100);
+
+                console.log('编辑器已就绪，可以使用 Ctrl+Enter 预览');
+            } catch (error) {
+                if (loadingEl) loadingEl.textContent = '❌ 加载失败，请刷新重试';
+                console.error('初始化失败', error);
+            }
+        })();
+    </script>
+</body>
+</html>
