@@ -6,4 +6,4 @@ class qingShuRuWenBen {
         })
     }
 }
-Scratch.extensions.register(qingShuRuWenBen)
+Scratch.extensions.register(new qingShuRuWenBen())
