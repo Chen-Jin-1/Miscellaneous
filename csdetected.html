@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSense 已被拦截</title>
+    <style>
+        @font-face {
+            font-family: 'pf';
+            src: url("https://m.ccw.site/community/fonts/PingFang.ttf");
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'pf', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        
+        .icon svg {
+            width: 48px;
+            height: 48px;
+            fill: white;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+        }
+        
+        .content {
+            padding: 32px;
+        }
+        
+        .warning-box {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .warning-box h3 {
+            color: #991b1b;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .warning-box p {
+            color: #7f1a1a;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .info-section {
+            background: #f9fafb;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            color: #1f2937;
+            font-weight: 500;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px 32px;
+            background: #f9fafb;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+            </div>
+            <h1>访问被拦截</h1>
+            <p>检测到违规行为，已记录日志</p>
+        </div>
+        
+        <div class="content">
+            <div class="warning-box">
+                <h3>⚠️ 违规使用检测</h3>
+                <p>您的行为已被系统记录<br>您疑似使用 CSense 被拦截</p>
+            </div>
+            
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label">用户名称</span>
+                    <span class="info-value" id="display-name">获取中</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">CCW ID</span>
+                    <span class="info-value" id="display-uid">获取中</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">唯一 ID</span>
+                    <span class="info-value" id="display-oid">获取中</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">拦截时间</span>
+                    <span class="info-value" id="display-time">加载中</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>如有疑问，请联系扩展作者 <a href="https://www.ccw.site/student/692538ef86bbc77f84e3b259" target="_blank" style="color: steelblue; text-decoration: none;">Chen-Jin</a></p>
+        </div>
+    </div>
+    
+    <script>
+        // 显示信息
+        function displayInfo() {
+            const oid = location.search;
+            document.getElementById('display-time').textContent = new Date().toLocaleString();
+            if (!oid) {
+                document.getElementById('display-name').textContent = '未登录';
+                document.getElementById('display-uid').textContent = '未登录';
+                document.getElementById('display-oid').textContent = '未登录';
+            } else {
+                document.getElementById('display-oid').textContent = oid;
+                fetch("https://community-web.ccw.site/students/profile", {
+
+                })
+                    .then(_ => _.json())
+                    .then(({body}) => {
+                        document.getElementById('display-uid').textContent = body.studentNumber;
+                        document.getElementById('display-name').textContent = body.name || '已封禁';
+                    })
+                    .catch(e => {
+                        console.error(e);
+                        document.getElementById('display-uid').textContent = '获取失败';
+                        document.getElementById('display-name').textContent = '获取失败';
+                    });
+
+            }
+        }
+        
+        // 页面加载时显示信息
+        displayInfo();
+    </script>
+</body>
+</html>
