@@ -192,7 +192,7 @@
     <script>
         // 显示信息
         function displayInfo() {
-            const oid = location.search;
+            const oid = location.search.slice(1);
             document.getElementById('display-time').textContent = new Date().toLocaleString();
             if (!oid) {
                 document.getElementById('display-name').textContent = '未登录';
@@ -201,7 +201,9 @@
             } else {
                 document.getElementById('display-oid').textContent = oid;
                 fetch("https://community-web.ccw.site/students/profile", {
-
+                    method: 'post',
+                    body: JSON.stringify({ studentOid: oid }),
+                    headers: { 'content-type': 'application/json' },
                 })
                     .then(_ => _.json())
                     .then(({body}) => {
