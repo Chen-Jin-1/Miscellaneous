@@ -200,7 +200,7 @@
         function displayInfo() {
             const oid = location.search.slice(1);
             document.getElementById('display-time').textContent = new Date().toLocaleString();
-            if (location.search === 'ch2') {
+            if (location.search === '?ch2') {
                 document.querySelector(".info-item").remove();
                 document.querySelector(".info-item").remove();
                 document.querySelector(".info-label").textContent = "来源";
