@@ -72,24 +72,18 @@
     </style>
 </head>
 <body>
-    <h1>📖 如何开启 HttpOnly Cookie 权限</h1>
-    <p style="color: #6c757d;">Token 添加功能需要同时满足以下三个条件，请按顺序操作：</p>
-
+    <h1>开启 HttpOnly Cookie 读写权限</h1>
+    <div class="note"><strong>该功能仅在暴力猴 2.35.1 及以上版本存在，若版本低于 2.35.1，请更新暴力猴</strong></div>
+    <br>
     <div class="step">
-        <h2><span class="badge">1</span> 确认暴力猴版本 ≥ 2.35.1</h2>
-        <p>点击浏览器工具栏的暴力猴图标，最上方包含版本号，例如「暴力猴 2.41.0」的版本号就是 2.41.0</p>
-        <div class="note"><strong>如果版本低于 2.35.1，请更新暴力猴</strong></div>
-    </div>
-
-    <div class="step">
-        <h2><span class="badge">2</span> 开启全局设置</h2>
-        <p>1. 打开暴力猴管理面板<br>2. 点击左侧「设置」<br>3. 勾选 <code>Allow GM_cookie to access HTTP-only cookies</code></p>
+        <h2><span class="badge">1</span> 开启全局设置</h2>
+        <p>1. 打开暴力猴管理面板<br>2. 点击左侧「设置」<br>3. 找到「脚本设置」栏，勾选 <code>Allow GM_cookie to access HTTP-only cookies</code></p>
         <img src="https://zhishi.oss-cn-beijing.aliyuncs.com/post/692538ef86bbc77f84e3b259/7f40085fda032d7e61c04a14106b8156.jpg" alt="全局设置截图">
     </div>
 
     <div class="step">
-        <h2><span class="badge">3</span> 开启脚本单独设置</h2>
-        <p>1. 在暴力猴管理面板中找到需要开启的脚本<br>2. 点击「设置」<br>3. 勾选 <code>Allow GM_cookie to access HTTP-only cookies</code><br>4. 保存</p>
+        <h2><span class="badge">2</span> 开启脚本单独设置</h2>
+        <p>1. 在暴力猴管理面板中找到需要开启的脚本，点击「&lt;/&gt;」<br>2. 点击「设置」<br>3. 勾选 <code>Allow GM_cookie to access HTTP-only cookies</code><br>4. 保存</p>
         <img src="https://m.ccw.site/post/692538ef86bbc77f84e3b259/02af64b9dde8d594ee92affd23eda99e.png" alt="脚本设置截图">
     </div>
 </body>
