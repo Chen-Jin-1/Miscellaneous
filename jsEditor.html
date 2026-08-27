@@ -122,9 +122,10 @@
 
             // --- 核心运行函数 ---
             function runCode() {
+                frame.onload = null;
                 const code = editor.getValue();
                 frame.srcdoc = '<!DOCTYPE html><html><head></head><body></body></html>';
-                frame.contentWindow.eval(code);
+                frame.onload = e => frame.contentWindow.eval(code);
             }
 
             document.getElementById('run-btn').addEventListener('click', runCode);
