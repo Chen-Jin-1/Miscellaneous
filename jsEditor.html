@@ -21,7 +21,12 @@
         #editor-container {
             flex: 1;
             height: 100%;
-            border-right: 2px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+            transition: flex 0.3s ease;
+            overflow: hidden;
+            min-width: 0;
         }
         #output-container {
             flex: 1;
@@ -29,6 +34,8 @@
             display: flex;
             flex-direction: column;
             background: #f5f5f5;
+            min-width: 0;
+            transition: 0.3s;
         }
         #output-header {
             padding: 8px 15px;
@@ -70,6 +77,63 @@
             border-radius: 8px;
             z-index: 1000;
         }
+        /* 固定按钮组 */
+        #float-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        #float-buttons button {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #fff;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        #float-buttons button:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        #float-buttons button.active {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: #4CAF50;
+        }
+
+        /* 面板折叠样式 - 和之前一样 */
+        #editor-container.collapsed {
+            flex: 0 0 0;
+        }
+
+        #editor-container.collapsed #monaco-editor {
+            display: none;
+        }
+
+        #output-container.collapsed {
+            flex: 0 0 0;
+        }
+
+        #output-container.collapsed #output-frame {
+            display: none;
+        }
+
+        #output-container.collapsed #output-header {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -82,6 +146,10 @@
                 <button id="run-btn">▶ 运行代码 (Ctrl+Enter)</button>
             </div>
             <iframe id="output-frame"></iframe>
+        </div>
+        <div id="float-buttons">
+            <button id="toggle-editor" title="折叠/展开编辑器">◀ 编辑器</button>
+            <button id="toggle-output" title="折叠/展开输出">◀ 输出</button>
         </div>
     </div>
 
@@ -136,6 +204,118 @@
             // 默认自动运行一次，展示效果
             setTimeout(runCode, 300);
         }
+
+        // --- 折叠左侧编辑器 ---
+        const editorPanel = document.getElementById('editor-container');
+        const toggleEditorBtn = document.getElementById('toggle-editor');
+        let editorCollapsed = false;
+
+        toggleEditorBtn.addEventListener('click', function(e) {
+            editorCollapsed = !editorCollapsed;
+            editorPanel.classList.toggle('collapsed', editorCollapsed);
+            this.textContent = editorCollapsed ? '▶ 编辑器' : '◀ 编辑器';
+            this.classList.toggle('active', editorCollapsed);
+            this.className === "active" && toggleOutputBtn.className === "active" && toggleOutputBtn.click();
+            setTimeout(() => {
+                if (window.editor) window.editor.layout();
+            }, 350);
+        });
+
+        // --- 折叠右侧输出 ---
+        const outputPanel = document.getElementById('output-container');
+        const toggleOutputBtn = document.getElementById('toggle-output');
+        let outputCollapsed = false;
+
+        toggleOutputBtn.addEventListener('click', function(e) {
+            outputCollapsed = !outputCollapsed;
+            outputPanel.classList.toggle('collapsed', outputCollapsed);
+            this.textContent = outputCollapsed ? '▶ 输出' : '◀ 输出';
+            this.classList.toggle('active', outputCollapsed);
+            this.className === "active" && toggleEditorBtn.className === "active" && toggleEditorBtn.click();
+            setTimeout(() => {
+                if (window.editor) window.editor.layout();
+            }, 350);
+        });
+        (function makeDraggable(element) {
+            let isDragging = false;
+            let startX, startY;
+            let initialRight, initialTop;
+            let hasMoved = false;
+            let dragId = null;  // 用于识别当前拖拽
+            
+            element.style.cursor = "grab";
+            element.addEventListener('pointerdown', startDrag);
+            
+            function startDrag(e) {
+                // 只响应左键 (触屏和触控笔的 button 也是 0)
+                if (e.button !== undefined && e.button !== 0) return;
+                if (e.pointerType === 'pen' && e.pressure === 0) return;
+                else if (e.target !== element) return;
+
+                element.style.cursor = "grabbing";
+                
+                // 防止选中文本
+                e.preventDefault();
+                
+                isDragging = true;
+                hasMoved = false;
+                dragId = e.pointerId;  // 记录当前拖拽指针 ID
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                // 获取当前位置
+                const computedStyle = getComputedStyle(element);
+                initialRight = parseFloat(computedStyle.right) || 20;
+                initialTop = parseFloat(computedStyle.top) || 20;
+                
+                // ✅ 关键：监听 document，而不是元素
+                document.addEventListener('pointermove', onDrag);
+                document.addEventListener('pointerup', stopDrag);
+                document.addEventListener('pointercancel', stopDrag);
+                
+                // 设置捕获，确保即使指针移出元素也能收到事件
+                element.setPointerCapture(e.pointerId);
+            }
+            
+            function onDrag(e) {
+                if (!isDragging) return;
+                if (e.pointerId !== dragId) return;
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                // 检测是否真的移动了（防止误触）
+                if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) hasMoved = true;
+                
+                // 更新位置
+                element.style.right = (initialRight - deltaX) + 'px';
+                element.style.top = (initialTop + deltaY) + 'px';
+                element.style.bottom = "unset";
+                
+                e.preventDefault();
+            }
+            
+            function stopDrag(e) {
+                if (!isDragging) return;
+                if (e.pointerId !== dragId) return;
+                element.style.cursor = "grab";
+                
+                isDragging = false;
+                dragId = null;
+                
+                document.removeEventListener('pointermove', onDrag);
+                document.removeEventListener('pointerup', stopDrag);
+                document.removeEventListener('pointercancel', stopDrag);
+                
+                // 释放捕获
+                element.releasePointerCapture(e.pointerId);
+                
+                // 如果没有移动，触发点击事件
+                if (!hasMoved) {
+                    // 模拟点击
+                    element.click();
+                }
+            }
+        })(document.getElementById("float-buttons"));
     </script>
 </body>
 </html>
