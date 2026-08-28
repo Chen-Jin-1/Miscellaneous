@@ -187,13 +187,12 @@
 
             // --- 获取 iframe 元素 ---
             const frame = document.getElementById('output-frame');
-
             // --- 核心运行函数 ---
             function runCode() {
                 frame.onload = null;
                 const code = editor.getValue();
                 frame.srcdoc = '<!DOCTYPE html><html><head></head><body></body></html>';
-                frame.onload = e => frame.contentWindow.eval(code);
+                frame.onload = e => frame.contentWindow.eval('(async()=>{}).constructor')(code)();
             }
 
             document.getElementById('run-btn').addEventListener('click', runCode);
