@@ -315,6 +315,7 @@
                 }
             }
         })(document.getElementById("float-buttons"));
+        window.onbeforeunload = e => (e.preventDefault(), 1);
     </script>
 </body>
 </html>
