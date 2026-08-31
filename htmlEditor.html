@@ -189,28 +189,11 @@
                 fontSize: 14,
             });
 
+            // --- 获取 iframe 元素 ---
             const frame = document.getElementById('output-frame');
-            function cs() {
-                let store = {};
-                return {
-                    getItem: (key) => store[key] || null,
-                    setItem: (key, value) => { store[key] = String(value); },
-                    removeItem: (key) => { delete store[key]; },
-                    clear: () => store = {},
-                    key: (index) => Object.keys(store)[index] || null,
-                    get length() { return Object.keys(store).length; },
-                };
-            }
-
+            // --- 核心运行函数 ---
             function runCode() {
-                frame.onload = null;
-                const code = editor.getValue();
-                frame.srcdoc = '<!DOCTYPE html><html><head></head><body></body></html>';
-                frame.onload = e => {
-                    Object.defineProperty(contentWindow, 'localStorage', cs());
-                    Object.defineProperty(contentWindow, 'sessionStorage', cs());
-                    frame.contentWindow.document.write(code);
-                }
+                frame.srcdoc = editor.getValue();
             }
 
             document.getElementById('run-btn').addEventListener('click', runCode);
