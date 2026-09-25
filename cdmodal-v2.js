@@ -60,7 +60,8 @@ style.textContent = `:root {
     font-family: 'PingFang', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background-color: var(--cdmodal-overlay-bg);
     backdrop-filter: blur(var(--cdmodal-overlay-blur));
-    animation: cdmodal-fade-in 0.2s ease
+    animation: cdmodal-fade-in 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .cdmodal-container {
@@ -76,7 +77,6 @@ style.textContent = `:root {
     animation: cdmodal-container-in 0.25s cubic-bezier(0.21, 1.11, 0.35, 1);
     white-space: break-spaces;
     word-break: break-all;
-    -webkit-tap-highlight-color: transparent;
     user-select: var(--cdmodal-user-select);
 }
 
@@ -326,14 +326,14 @@ style.textContent = `:root {
     background: var(--cdmodal-settings-item-hover);
 }
 
-
+/* ===== 主体（左右布局） ===== */
 .cdmodal-settings-body {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
 
-
+/* ===== 左侧菜单 ===== */
 .cdmodal-settings-left {
     width: 180px;
     min-width: 180px;
@@ -397,7 +397,7 @@ style.textContent = `:root {
     margin: 0.25rem 0.75rem;
 }
 
-
+/* ===== 右侧详情 ===== */
 .cdmodal-settings-right {
     flex: 1;
     overflow-y: auto;
@@ -413,34 +413,18 @@ style.textContent = `:root {
     border-radius: 4px;
 }
 
-.cdmodal-settings-group-header {
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.cdmodal-settings-group-title {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--cdmodal-title-color);
-}
-
-.cdmodal-settings-group-desc {
-    font-size: 0.8rem;
-    color: var(--cdmodal-content-color);
-    opacity: 0.6;
-    margin-top: 0.15rem;
-}
-
-.cdmodal-settings-empty {
-    text-align: center;
+.cdmodal-settings-right:empty::after {
+    content: '此分组暂无设置项';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
     color: var(--cdmodal-content-color);
     opacity: 0.4;
-    padding: 2rem 0;
     font-size: 0.9rem;
 }
 
-
+/* ===== 设置项行 ===== */
 .cdmodal-setting-row {
     display: flex;
     align-items: center;
@@ -481,7 +465,7 @@ style.textContent = `:root {
     align-items: center;
 }
 
-
+/* ===== 自定义开关 ===== */
 .cdmodal-switch {
     position: relative;
     display: inline-block;
@@ -531,7 +515,7 @@ style.textContent = `:root {
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
 }
 
-
+/* ===== 自定义选择框 ===== */
 .cdmodal-select-wrap {
     position: relative;
     display: inline-block;
@@ -569,7 +553,7 @@ style.textContent = `:root {
     opacity: 0.6;
 }
 
-
+/* ===== 自定义输入框 ===== */
 .cdmodal-input-custom {
     padding: 0.3rem 0.75rem;
     border-radius: 0.375rem;
@@ -588,7 +572,7 @@ style.textContent = `:root {
     border-color: var(--cdmodal-primary);
 }
 
-
+/* ===== 自定义颜色选择器 ===== */
 .cdmodal-color-wrap {
     display: flex;
     align-items: center;
@@ -628,7 +612,7 @@ style.textContent = `:root {
     border-color: var(--cdmodal-primary);
 }
 
-
+/* ===== 自定义按钮 ===== */
 .cdmodal-btn-settings {
     padding: 0.3rem 1.2rem;
     border: none;
@@ -645,7 +629,7 @@ style.textContent = `:root {
     opacity: 0.8;
 }
 
-
+/* ===== 底部按钮 ===== */
 .cdmodal-settings-footer {
     display: flex;
     justify-content: flex-end;
@@ -760,7 +744,7 @@ style.textContent = `:root {
     color: var(--cdmodal-primary);
 }
 
-
+/* ===== 自定义 Range ===== */
 .cdmodal-custom-range {
     display: flex;
     align-items: center;
@@ -776,7 +760,7 @@ style.textContent = `:root {
     display: flex;
     align-items: center;
 }
-
+/* 实际轨道线 */
 .cdmodal-custom-range .track::before {
     content: '';
     position: absolute;
@@ -835,7 +819,7 @@ style.textContent = `:root {
 }`;
 document.head.appendChild(style);
 
-let globalSettings = {
+const globalSettings = {
     theme: 'light',
     overlayBlur: 8,
     modalBorderRadius: 28,
@@ -1014,7 +998,9 @@ function showSnackbarInternal(text, durationSec, position, bgColor, textColor) {
         }
     });
 }
-const settingStore = {
+
+let ref;
+export const settingStore = {
     groups: {},
     selectedIndex: -1,
     
@@ -1023,12 +1009,7 @@ const settingStore = {
             console.warn(`分组 "${label}" 已存在，跳过添加`);
             return false;
         }
-        this.groups[label] = {
-            type: 'group',
-            label: label,
-            items: items,
-            description: ''
-        };
+        this.groups[label] = items;
         return true;
     },
     
@@ -1050,8 +1031,8 @@ const settingStore = {
     
     hasSetting(label) {
         for (const group of Object.values(this.groups)) {
-            if (group.items) {
-                const found = group.items.find(sub => sub.label === label);
+            if (group) {
+                const found = group.find(sub => sub.label === label);
                 if (found) return true;
             }
         }
@@ -1060,8 +1041,8 @@ const settingStore = {
     
     getSetting(label) {
         for (const group of Object.values(this.groups)) {
-            if (group.items) {
-                const found = group.items.find(sub => sub.label === label);
+            if (group) {
+                const found = group.find(sub => sub.label === label);
                 if (found) return found;
             }
         }
@@ -1070,7 +1051,7 @@ const settingStore = {
     
     getValue(label) {
         const item = this.getSetting(label);
-        if (item && item.type !== 'group') {
+        if (item) {
             return item.default;
         }
         return null;
@@ -1078,25 +1059,16 @@ const settingStore = {
     
     setValue(label, value) {
         const item = this.getSetting(label);
-        if (item && item.type !== 'group') {
+        if (item) {
             item.default = value;
+            runtime.startHats(
+                'cdmodal_whenschange', 
+                { TEXT: label },
+                null,
+            ).forEach(t => t.v = value);
             return true;
         }
         return false;
-    },
-    
-    getValues() {
-        const result = {};
-        for (const group of Object.values(this.groups)) {
-            if (group.items) {
-                group.items.forEach(subItem => {
-                    if (subItem.type !== 'group') {
-                        result[subItem.label] = subItem.default;
-                    }
-                });
-            }
-        }
-        return result;
     },
     
     getSettingsJSON() {
@@ -1126,10 +1098,10 @@ const settingStore = {
     
     removeSetting(label) {
         for (const group of Object.values(this.groups)) {
-            if (group.items) {
-                const index = group.items.findIndex(sub => sub.label === label);
+            if (group) {
+                const index = group.findIndex(sub => sub.label === label);
                 if (index !== -1) {
-                    group.items.splice(index, 1);
+                    group.splice(index, 1);
                     return true;
                 }
             }
@@ -1151,13 +1123,91 @@ const settingStore = {
             return false;
         }
         
-        group.items.push({
+        group.push({
             type: 'text',
             label: label,
             description: description || undefined
         });
         return true;
     },
+
+    setSettingOrder(groupName, label, newIndex) {
+        const group = this.getGroup(groupName);
+        if (!group) return false;
+        
+        const index = group.findIndex(item => item.label === label);
+        if (index === -1) return false;
+        
+        // 移除并重新插入
+        const [item] = group.splice(index, 1);
+        group.splice(newIndex, 0, item);
+        return true;
+    },
+
+    moveSetting(label, targetGroupName, index = -1) {
+        let sourceItem = null;
+        let sourceGroup = null;
+        
+        // 查找设置项
+        for (const group of Object.values(this.groups)) {
+            const idx = group.findIndex(item => item.label === label);
+            if (idx !== -1) {
+                sourceItem = group[idx];
+                sourceGroup = group;
+                group.splice(idx, 1);
+                break;
+            }
+        }
+        
+        if (!sourceItem) return false;
+        
+        // 添加到目标分组
+        const targetGroup = this.getGroup(targetGroupName);
+        if (!targetGroup) {
+            // 回滚
+            if (sourceGroup) sourceGroup.push(sourceItem);
+            return false;
+        }
+        
+        if (index >= 0 && index < targetGroup.length) {
+            targetGroup.splice(index, 0, sourceItem);
+        } else {
+            targetGroup.push(sourceItem);
+        }
+        return true;
+    },
+
+    setGroupOrder(groupName, newIndex) {
+        const names = this.getGroupNames();
+        const oldIndex = names.indexOf(groupName);
+        if (oldIndex === -1) return false;
+        
+        // 重新排列
+        names.splice(oldIndex, 1);
+        names.splice(newIndex, 0, groupName);
+        
+        // 重建 groups 对象（保持顺序）
+        const newGroups = {};
+        for (const name of names) {
+            newGroups[name] = this.groups[name];
+        }
+        this.groups = newGroups;
+        return true;
+    },
+
+    getGroupOrder() {
+        return this.getGroupNames();
+    },
+
+    setDefaultGroup(label) {
+        if (!this.groups[label]) return false;
+        this.defaultGroup = label;
+        return true;
+    },
+
+    getDefaultGroup() {
+        return this.defaultGroup;
+    }
 };
 
 function showSettingsUI(options = {}) {
@@ -1240,10 +1290,7 @@ function showSettingsUI(options = {}) {
         const closeBtnFooter = document.createElement('button');
         closeBtnFooter.className = 'btn-cancel';
         closeBtnFooter.textContent = '关闭';
-        closeBtnFooter.onclick = () => {
-            onSave && onSave(settingStore.getValues())
-            finalize(settingStore.getValues());
-        };
+        closeBtnFooter.onclick = finalize;
         footer.appendChild(closeBtnFooter);
         container.appendChild(footer);
 
@@ -1253,15 +1300,13 @@ function showSettingsUI(options = {}) {
 
         function renderLeftMenu() {
             leftPanel.innerHTML = '';
-            const groups = settingStore.getAllGroups();
-
-            // 只渲染分组
-            groups.forEach((group, idx) => {
-                const menuItem = createMenuItem(group, idx);
+            const names = settingStore.getGroupNames();
+    
+            names.forEach((name, idx) => {
+                const menuItem = createMenuItem(name, idx);
                 leftPanel.appendChild(menuItem);
             });
 
-            // 选中状态
             const children = leftPanel.children;
             if (selectedIndex >= 0 && selectedIndex < children.length) {
                 const target = children[selectedIndex];
@@ -1283,21 +1328,19 @@ function showSettingsUI(options = {}) {
             }
         }
 
-        function createMenuItem(group, index) {
+        function createMenuItem(name, index) {
             const div = document.createElement('div');
             div.className = 'cdmodal-settings-menu-item';
             
             const labelSpan = document.createElement('span');
             labelSpan.className = 'label';
-            labelSpan.textContent = group.label;
+            labelSpan.textContent = name;
             div.appendChild(labelSpan);
             
-            if (group.type === 'group') {
-                const arrow = document.createElement('img');
-                arrow.className = 'arrow';
-                arrow.src = '//m.ccw.site/works-covers/cdm-dropdown.svg';
-                div.appendChild(arrow);
-            }
+            const arrow = document.createElement('img');
+            arrow.className = 'arrow';
+            arrow.src = '//m.ccw.site/works-covers/cdm-dropdown.svg';
+            div.appendChild(arrow);
             
             div.onclick = () => {
                 const children = leftPanel.children;
@@ -1305,16 +1348,10 @@ function showSettingsUI(options = {}) {
                     children[i].classList.remove('active');
                 }
                 div.classList.add('active');
-                
                 selectedIndex = index;
                 settingStore.selectedIndex = index;
-                
-                const groups = settingStore.getAllGroups();
-                const targetGroup = groups[index];
-                if (targetGroup) {
-                    currentGroup = targetGroup;
-                    renderRightPanel(index);
-                }
+                currentGroup = name;
+                renderRightPanel(index);
             };
             
             return div;
@@ -1333,38 +1370,13 @@ function showSettingsUI(options = {}) {
                 rightPanel.appendChild(empty);
                 return;
             }
-
-            // 分组标题
-            const groupHeader = document.createElement('div');
-            groupHeader.className = 'cdmodal-settings-group-header';
-            
-            const groupTitle = document.createElement('div');
-            groupTitle.className = 'cdmodal-settings-group-title';
-            groupTitle.textContent = targetGroup.label;
-            groupHeader.appendChild(groupTitle);
-            
-            if (targetGroup.description) {
-                const desc = document.createElement('div');
-                desc.className = 'cdmodal-settings-group-desc';
-                desc.textContent = targetGroup.description;
-                groupHeader.appendChild(desc);
-            }
-            
-            rightPanel.appendChild(groupHeader);
             
             // 子项
-            const subItems = targetGroup.items || [];
+            const subItems = targetGroup || [];
             subItems.forEach((item) => {
                 const wrapper = createSettingRow(item);
                 rightPanel.appendChild(wrapper);
             });
-            
-            if (subItems.length === 0) {
-                const empty = document.createElement('div');
-                empty.className = 'cdmodal-settings-empty';
-                empty.textContent = '此分组暂无设置项';
-                rightPanel.appendChild(empty);
-            }
         }
 
         // ===== 创建设置项行 =====
@@ -1428,7 +1440,7 @@ function showSettingsUI(options = {}) {
             }
 
             // 存储状态
-            if (item.default !== undefined && item.type !== 'group' && !(item.label in settingsState)) {
+            if (item.default !== undefined && !(item.label in settingsState)) {
                 settingsState[item.label] = item.default;
             }
 
@@ -1564,16 +1576,18 @@ function showSettingsUI(options = {}) {
             }
             
             input.oninput = () => {
-                let value = input.value;
-                if (item.inputType === 'number') {
-                    value = value.replace(/[^0-9.]/g, '');
-                    input.value = value;
-                }
-                settingStore.setValue(item.label, value);
-                if (item.onChange) item.onChange(value);
+                if (item.inputType === 'number') input.value = input.value.replace(/[^0-9.]/g, '');
             };
+
+            input.onblur = () => {
+                const value = input.value;
+                if (item.onChange) item.onChange(value);
+                settingStore.setValue(item.label, value);
+            }
             
-            input.onkeydown = e => e.key === "Enter" && input.blur() || 1;
+            input.onkeydown = e => {
+                if (e.key === "Enter") input.blur();
+            };
 
             return input;
         }
@@ -1763,107 +1777,52 @@ function showSettingsUI(options = {}) {
             };
             return btn;
         }
+        if (settingStore.defaultGroup) {
+            const names = settingStore.getGroupNames();
+            const defaultIndex = names.indexOf(settingStore.defaultGroup);
+            if (defaultIndex !== -1) {
+                selectedIndex = defaultIndex;
+            }
+        }
         renderLeftMenu();
+
+        ref = () => {
+            renderLeftMenu();
+            if (currentGroup) {
+                const names = settingStore.getGroupNames();
+                const index = names.indexOf(currentGroup);
+                if (index !== -1) {
+                    renderRightPanel(index);
+                }
+            }
+        };
     });
 }
 
-class CDModalc {
-    alert(message, title = '提示') {
-        return showModal({ 
-            title: title, 
-            content: String(message), 
-            confirmText: '确定', 
-            showCancel: false 
-        });
-    }
-
-    async confirm(message, title = '确认', confirmText = '确认', cancelText = '取消') {
-        const r = await showModal({ 
-            title: title, 
-            content: String(message), 
-            confirmText: confirmText, 
-            cancelText: cancelText, 
-            showCancel: true 
-        });
-        return r === true;
-    }
-
-    async prompt(message, value = '', placeholder = '', title = '输入', confirmText = '提交', cancelText = '取消', showCancel = true) {
-        const r = await showModal({ 
-            title: title, 
-            content: String(message), 
-            confirmText: confirmText, 
-            cancelText: cancelText,
-            showCancel: showCancel, 
+export const cdmodal = {
+    alert: (content, title = '提示') => 
+        showModal({ title, content, confirmText: '确定', showCancel: false }),
+    confirm: (content, title = '确认', confirmText = '确认', cancelText = '取消') => 
+        showModal({ title, content, confirmText, cancelText, showCancel: true }),
+    prompt: (content, title = '输入', defaultValue = '', placeholder = '', showCancel = true, confirmText = '确认', cancelText = '取消') => 
+        showModal({ 
+            title, 
+            content, 
+            confirmText, 
+            cancelText, 
+            showCancel, 
             input: true, 
-            inputPlaceholder: String(placeholder), 
-            value: String(value) 
-        });
-        return r === null ? '' : String(r);
-    }
+            inputPlaceholder: placeholder,
+            value: defaultValue 
+        }),
+    choice: (title, content, choices) => {
+        let list = Array.isArray(choices) ? choices : [choices];
+        list = list.map(i => typeof i === 'string' ? { label: i, value: i } : i);
+        return showModal({ title, content, choices: list, closeOnOverlay: false });
+    },
+    snackbar: (text, duration = 2, position = '底部居中') => showSnackbarInternal(text, duration, position, null, null),
+    showSettings: (title = '设置') => showSettingsUI({ title }),
+    get refreshSettings() { return ref },
+};
 
-    async choice(title, content, choices, defaultValue = '') {
-        let choicesArray = [];
-        try {
-            if (Array.isArray(choices)) {
-                choicesArray = choices.map(i => typeof i === 'string' ? { label: i, value: i } : i);
-            } else if (typeof choices === 'string') {
-                try {
-                    const p = JSON.parse(choices);
-                    if (Array.isArray(p)) choicesArray = p.map(i => typeof i === 'string' ? { label: i, value: i } : i);
-                } catch (e) {
-                    choicesArray = String(choices).split(',').map(s => ({ label: s.trim(), value: s.trim() }));
-                }
-            }
-        } catch (e) {
-            choicesArray = [{ label: '确定', value: '确定' }];
-        }
-        if (!choicesArray.length) choicesArray = [{ label: '确定', value: '确定' }];
-        const r = await showModal({ 
-            title: String(title), 
-            content: String(content), 
-            choices: choicesArray, 
-            closeOnOverlay: false 
-        });
-        return r !== null ? String(r) : String(defaultValue);
-    }
-
-    custom(title, content, confirmText, cancelText = '', wait = true) {
-        const showCancel = String(cancelText).trim().length > 0;
-        const r = showModal({ 
-            title: String(title), 
-            content: String(content), 
-            confirmText: String(confirmText), 
-            cancelText: showCancel ? String(cancelText) : '', 
-            showCancel: showCancel 
-        });
-        return wait ? r : undefined;
-    }
-
-    snackbar(text, duration = 2, position = '底部居中', bgColor = null, textColor = null, wait = true) {
-        const r = showSnackbarInternal(String(text), duration, String(position), bgColor, textColor);
-        return wait ? r : undefined;
-    }
-
-    settings(title = '设置', wait = true) {
-        const result = showSettingsUI({ title: String(title) });
-        return wait ? result : undefined;
-    }
-
-    getValue(label) {
-        return settingStore.getValue(label);
-    }
-
-    getValues() {
-        return settingStore.getValues();
-    }
-
-    getSettingsJSON() {
-        return settingStore.getSettingsJSON();
-    }
-
-    importSettings(jsonData) {
-        return settingStore.importSettings(jsonData);
-    }
-}
-window.cdmodal = new CDModalc();
+export { globalSettings as config };
