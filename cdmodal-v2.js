@@ -1,5 +1,6 @@
 document.getElementById('cdmodal-styles')?.remove();
-const style = document.createElement('style');
+const style = document.createElement('style'),
+    arrsrc = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212.71%22 height=%228.79%22 viewBox=%220 0 12.71 8.79%22%3E%3Cpath d=%22M6.36%2C7.79a1.43%2C1.43%2C0%2C0%2C1-1-.42L1.42%2C3.45a1.44%2C1.44%2C0%2C0%2C1%2C0-2c0.56-.56%2C9.31-0.56%2C9.87%2C0a1.44%2C1.44%2C0%2C0%2C1%2C0%2C2L7.37%2C7.37A1.43%2C1.43%2C0%2C0%2C1%2C6.36%2C7.79Z%22 fill=%22%23fff%22/%3E%3C/svg%3E";
 style.id = 'cdmodal-styles';
 style.textContent = `:root {
     --cdmodal-primary: #6366f1;
@@ -387,7 +388,7 @@ style.textContent = `:root {
     color: var(--cdmodal-content-color);
     opacity: .5;
     filter: var(--cdmodal-arrow-filter);
-    zoom: .7;
+    scale: .7;
     transform: rotate(-90deg);
 }
 
@@ -443,6 +444,7 @@ style.textContent = `:root {
 .cdmodal-setting-row .label-wrap {
     flex: 0 0 auto;
     min-width: 100px;
+    max-width: 100%;
 }
 
 .cdmodal-setting-row .label-wrap .main {
@@ -456,6 +458,8 @@ style.textContent = `:root {
     color: var(--cdmodal-content-color);
     opacity: 0.5;
     margin-top: 0.1rem;
+    max-width: 100%;
+    white-space: pre-wrap;
 }
 
 .cdmodal-setting-row .control-wrap {
@@ -698,9 +702,9 @@ style.textContent = `:root {
 .cdmodal-custom-select .select-display .arrow {
     font-size: 0.6rem;
     opacity: 0.6;
-    transition: transform 0.5s;
+    transition: transform 0.3s;
     filter: var(--cdmodal-arrow-filter);
-    zoom: .7;
+    scale: .6;
 }
 .cdmodal-custom-select .select-display .arrow.open {
     transform: rotateX(180deg);
@@ -810,7 +814,7 @@ style.textContent = `:root {
     background: rgba(0,0,0,0.02);
     border-radius: 0.25rem;
     word-break: break-all;
-    max-width: 200px;
+    max-width: 100%;
     white-space: pre-wrap;
 }
 .cdmodal-setting-row:has(.cdmodal-text-display) {
@@ -1061,11 +1065,7 @@ export const settingStore = {
         const item = this.getSetting(label);
         if (item) {
             item.default = value;
-            runtime.startHats(
-                'cdmodal_whenschange', 
-                { TEXT: label },
-                null,
-            ).forEach(t => t.v = value);
+            cdmodal.settingValueChange(label, value);
             return true;
         }
         return false;
@@ -1339,7 +1339,7 @@ function showSettingsUI(options = {}) {
             
             const arrow = document.createElement('img');
             arrow.className = 'arrow';
-            arrow.src = '//m.ccw.site/works-covers/cdm-dropdown.svg';
+            arrow.src = arrsrc;
             div.appendChild(arrow);
             
             div.onclick = () => {
@@ -1488,9 +1488,9 @@ function showSettingsUI(options = {}) {
             textSpan.textContent = currentOption ? (currentOption.label || currentOption) : '未选择';
             display.appendChild(textSpan);
             
-            const arrow = document.createElement('span');
+            const arrow = document.createElement('img');
             arrow.className = 'arrow';
-            arrow.textContent = '▼';
+            arrow.src = arrsrc;
             display.appendChild(arrow);
             container.appendChild(display);
             
@@ -1823,6 +1823,7 @@ export const cdmodal = {
     snackbar: (text, duration = 2, position = '底部居中') => showSnackbarInternal(text, duration, position, null, null),
     showSettings: (title = '设置') => showSettingsUI({ title }),
     get refreshSettings() { return ref },
+    settingValueChange: () => {},
 };
 
 export { globalSettings as config };
