@@ -1,0 +1,105 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="500" height="500" viewBox="0 0 500 500">
+    <defs>
+        <!-- 深蓝渐变背景 -->
+        <radialGradient id="bgGrad" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="#123a7a"/>
+            <stop offset="45%" stop-color="#0a2350"/>
+            <stop offset="100%" stop-color="#030b1a"/>
+        </radialGradient>
+
+        <!-- 蓝色发光滤镜 -->
+        <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="10" result="blur1"/>
+            <feGaussianBlur stdDeviation="22" result="blur2"/>
+            <feMerge>
+                <feMergeNode in="blur2"/>
+                <feMergeNode in="blur1"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+
+        <!-- 菱形填充渐变 -->
+        <linearGradient id="diamondFill" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#4da3ff"/>
+            <stop offset="50%" stop-color="#1f6fe0"/>
+            <stop offset="100%" stop-color="#0b3c91"/>
+        </linearGradient>
+
+        <linearGradient id="diamondFill2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#6bbcff"/>
+            <stop offset="55%" stop-color="#2b82ff"/>
+            <stop offset="100%" stop-color="#0a2f7a"/>
+        </linearGradient>
+    </defs>
+
+    <!-- 500x500 深蓝背景 -->
+    <rect x="0" y="0" width="500" height="500" fill="url(#bgGrad)"/>
+
+    <!-- 所有菱形都绕 250,250 旋转 -->
+    <g transform="translate(250,250)">
+        <g transform="translate(-250,-250)">
+
+            <!-- 第 1 层：最外层，最慢，顺时针 24 秒 -->
+            <g>
+                <animateTransform
+                    attributeName="transform"
+                    type="rotate"
+                    from="0 250 250"
+                    to="360 250 250"
+                    dur="24s"
+                    repeatCount="indefinite"/>
+                <path d="M103.64988,250l146.35012,-146.35012l146.35012,146.35012l-146.35012,146.35012z"
+                    fill="url(#diamondFill)" fill-opacity="0.35" filter="url(#glow)"/>
+                <path d="M103.64988,250l146.35012,-146.35012l146.35012,146.35012l-146.35012,146.35012z"
+                    fill="url(#diamondFill)" fill-opacity="0.75"/>
+            </g>
+
+            <!-- 第 2 层：稍快，逆时针 16 秒 -->
+            <g>
+                <animateTransform
+                    attributeName="transform"
+                    type="rotate"
+                    from="360 250 250"
+                    to="0 250 250"
+                    dur="16s"
+                    repeatCount="indefinite"/>
+                <path d="M114.63595,250l135.36405,-135.36405l135.36405,135.36405l-135.36405,135.36405z"
+                    fill="url(#diamondFill2)" fill-opacity="0.35" filter="url(#glow)"/>
+                <path d="M114.63595,250l135.36405,-135.36405l135.36405,135.36405l-135.36405,135.36405z"
+                    fill="url(#diamondFill2)" fill-opacity="0.78"/>
+            </g>
+
+            <!-- 第 3 层：更快，顺时针 10 秒 -->
+            <g>
+                <animateTransform
+                    attributeName="transform"
+                    type="rotate"
+                    from="0 250 250"
+                    to="360 250 250"
+                    dur="10s"
+                    repeatCount="indefinite"/>
+                <path d="M130.3501,250l119.6499,-119.6499l119.6499,119.6499l-119.6499,119.6499z"
+                    fill="url(#diamondFill)" fill-opacity="0.35" filter="url(#glow)"/>
+                <path d="M130.3501,250l119.6499,-119.6499l119.6499,119.6499l-119.6499,119.6499z"
+                    fill="url(#diamondFill)" fill-opacity="0.82"/>
+            </g>
+
+            <!-- 第 4 层：最内层，最快，逆时针 6 秒 -->
+            <g>
+                <animateTransform
+                    attributeName="transform"
+                    type="rotate"
+                    from="360 250 250"
+                    to="0 250 250"
+                    dur="6s"
+                    repeatCount="indefinite"/>
+                <path d="M156.77653,250l93.22347,-93.22347l93.22347,93.22347l-93.22347,93.22347z"
+                    fill="#5eb2ff" fill-opacity="0.45" filter="url(#glow)"/>
+                <path d="M156.77653,250l93.22347,-93.22347l93.22347,93.22347l-93.22347,93.22347z"
+                    fill="#7cc4ff" fill-opacity="0.95"/>
+            </g>
+
+        </g>
+    </g>
+</svg>
