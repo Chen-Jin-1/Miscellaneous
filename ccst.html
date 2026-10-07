@@ -12,6 +12,7 @@ display: grid;
 place-items: center;">
   <div id="cf"></div>
   <script>
+    if (!opener) location.replace('https://www.ccw.site/detail/6a79220f9467084978936c2d')
     const send = (type, payload) => opener?.postMessage({ type, ...payload }, 'https://www.ccw.site');
     window.onloadTurnstileCallback = function () {
       turnstile.render('#cf', {
