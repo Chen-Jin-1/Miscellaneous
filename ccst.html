@@ -5,10 +5,11 @@
   <title>金币存储站 Cloudflare Turnstile 验证</title>
 </head>
 <body style="background: #000;
-    margin: 0;
-    display: flex;
-    min-height: 100dvh;
-    place-items: center;">
+margin: 0;
+position: absolute;
+inset: 0;
+display: grid;
+place-items: center;">
   <div id="cf"></div>
   <script>
     const send = (type, payload) => opener?.postMessage({ type, ...payload }, 'https://www.ccw.site');
