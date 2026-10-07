@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>金币存储站 Cloudflare Turnstile 验证</title>
+</head>
+<body style="background: #000;
+    margin: 0;
+    display: flex;
+    min-height: 100dvh;
+    place-items: center;">
+  <div id="cf"></div>
+  <script>
+    const send = (type, payload) => opener?.postMessage({ type, ...payload }, 'https://www.ccw.site');
+    window.onloadTurnstileCallback = function () {
+      turnstile.render('#cf', {
+        sitekey: '0x4AAAAAAFOyiLb1hOyq7ZYs',
+        callback: function (token) {
+          send('turnstile-token', { token });
+          window.close();
+        },
+        'error-callback': function () {
+          send('turnstile-error', { error: '验证失败' });
+        }
+      });
+    };
+  </script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit" async defer></script>
+</body>
+</html>
