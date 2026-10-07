@@ -17,6 +17,23 @@
     <filter id="glass-blur" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="12"/>
     </filter>
+
+    <style>
+      .bot-card {
+        opacity: 0;
+        animation: botEnter 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes botEnter {
+        from {
+          opacity: 0;
+          transform: translateY(36px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
   </defs>
 
   <rect x="0" y="0" width="500" height="500" fill="url(#bg-grad)"/>
@@ -38,20 +55,8 @@
           fill="#ffffff"/>
   </g>
 
-  <!-- 毛玻璃方框 + BOT（带入场动画） -->
-  <g opacity="0">
-    <!-- 淡入：1.4s 缓出 -->
-    <animate attributeName="opacity"
-             values="0;1" keyTimes="0;1"
-             dur="1.4s" fill="freeze"
-             calcMode="spline" keySplines="0.16 1 0.3 1"/>
-
-    <!-- 上浮：从下方 36px 缓慢浮入并缓停 -->
-    <animateTransform attributeName="transform" type="translate"
-                      values="0 36; 0 0" keyTimes="0;1"
-                      dur="1.4s" fill="freeze"
-                      calcMode="spline" keySplines="0.16 1 0.3 1"/>
-
+  <!-- 毛玻璃方框 + BOT（CSS 入场动画） -->
+  <g class="bot-card">
     <!-- 深蓝色毛玻璃方框（下一层） -->
     <rect x="125" y="195" width="250" height="110" rx="16" ry="16"
           fill="rgba(16,40,78,0.75)"
